@@ -284,7 +284,3 @@ const DESTRUCTIVE_KEYWORDS = [
 ];
 ```
 
-## License
-
-ISC
-"# SqlQuery-Agent" 
