@@ -6,8 +6,12 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
+// Serve static files from public directory
+app.use(express.static("public"));
+
 const PORT = process.env.PORT || 3000;
 
+// Force restart
 /**
  * SQL Query Agent Endpoint
  * Accepts natural language questions and returns SQL query results

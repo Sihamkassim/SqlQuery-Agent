@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Query Agent</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900 min-h-screen text-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <i class="fas fa-database text-5xl text-blue-400"></i>
+                <h1 class="text-5xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                    SQL Query Agent
+                </h1>
+            </div>
+            <p class="text-gray-400 text-lg">Ask questions in natural language, get instant database insights</p>
+        </header>
+
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Left Panel - Query Input -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Question Input Card -->
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-6">
+                    <label class="block text-sm font-semibold text-gray-300 mb-3">
+                        <i class="fas fa-question-circle mr-2"></i>Ask Your Question
+                    </label>
+                    <textarea 
+                        id="questionInput" 
+                        rows="4" 
+                        class="w-full bg-gray-900 border border-gray-600 rounded-xl p-4 text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none resize-none"
+                        placeholder="e.g., How many users are in the database?"
+                    ></textarea>
+                    
+                    <!-- Options -->
+                    <div class="flex items-center gap-4 mt-4 text-sm">
+                        <label class="flex items-center gap-2 text-gray-400 cursor-pointer">
+                            <input type="checkbox" id="debugMode" class="w-4 h-4 rounded text-blue-500 focus:ring-2 focus:ring-blue-500">
+                            <span>Debug Mode</span>
+                        </label>
+                        <label class="flex items-center gap-2 text-gray-400">
+                            <span>Max Rows:</span>
+                            <input type="number" id="maxRows" value="100" min="1" max="1000" 
+                                class="w-20 bg-gray-900 border border-gray-600 rounded px-2 py-1 text-gray-100 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        id="askButton" 
+                        class="mt-4 w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+                    >
+                        <i class="fas fa-paper-plane mr-2"></i>Ask Question
+                    </button>
+                </div>
+
+                <!-- Response Card -->
+                <div id="responseCard" class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-6 hidden">
+                    <!-- Answer Section -->
+                    <div id="answerSection" class="mb-6">
+                        <h3 class="text-xl font-bold text-blue-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-lightbulb"></i>Answer
+                        </h3>
+                        <div id="answerText" class="bg-gray-900 rounded-lg p-4 text-gray-200 leading-relaxed"></div>
+                    </div>
+
+                    <!-- SQL Query Section -->
+                    <div id="sqlSection" class="mb-6">
+                        <h3 class="text-xl font-bold text-purple-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-code"></i>Generated SQL Query
+                        </h3>
+                        <div class="relative">
+                            <pre id="sqlQuery" class="bg-gray-900 rounded-lg p-4 text-green-400 font-mono text-sm overflow-x-auto"></pre>
+                            <button id="copyButton" class="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-gray-300 px-3 py-1 rounded text-xs transition-colors">
+                                <i class="fas fa-copy mr-1"></i>Copy
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Data Section -->
+                    <div id="dataSection">
+                        <h3 class="text-xl font-bold text-green-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-table"></i>Query Results
+                            <span id="rowCount" class="text-sm font-normal text-gray-400"></span>
+                        </h3>
+                        <div id="dataTable" class="overflow-x-auto bg-gray-900 rounded-lg"></div>
+                        <div id="executionTime" class="text-sm text-gray-400 mt-2"></div>
+                    </div>
+
+                    <!-- Debug Trace (if enabled) -->
+                    <div id="debugSection" class="mt-6 hidden">
+                        <h3 class="text-xl font-bold text-yellow-400 mb-3 flex items-center gap-2">
+                            <i class="fas fa-bug"></i>Debug Trace
+                        </h3>
+                        <pre id="debugTrace" class="bg-gray-900 rounded-lg p-4 text-yellow-300 font-mono text-xs overflow-x-auto"></pre>
+                    </div>
+                </div>
+
+                <!-- Error Card -->
+                <div id="errorCard" class="bg-red-900/20 backdrop-blur-sm rounded-2xl shadow-2xl border border-red-700 p-6 hidden">
+                    <h3 class="text-xl font-bold text-red-400 mb-3 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle"></i>Error
+                    </h3>
+                    <div id="errorText" class="text-red-300"></div>
+                    <pre id="errorDetails" class="bg-gray-900 rounded-lg p-4 text-red-400 font-mono text-xs overflow-x-auto mt-3 hidden"></pre>
+                </div>
+
+                <!-- Loading Spinner -->
+                <div id="loadingSpinner" class="hidden text-center py-12">
+                    <div class="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
+                    <p class="text-gray-400 mt-4">Processing your question...</p>
+                </div>
+            </div>
+
+            <!-- Right Panel - Examples & Info -->
+            <div class="space-y-6">
+                <!-- Example Questions -->
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-blue-400 mb-4 flex items-center gap-2">
+                        <i class="fas fa-list-ul"></i>Example Questions
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="example-btn w-full text-left bg-gray-900 hover:bg-gray-700 text-gray-300 px-4 py-3 rounded-lg transition-colors text-sm">
+                            How many users are in the database?
+                        </button>
+                        <button class="example-btn w-full text-left bg-gray-900 hover:bg-gray-700 text-gray-300 px-4 py-3 rounded-lg transition-colors text-sm">
+                            Show me all users with their emails
+                        </button>
+                        <button class="example-btn w-full text-left bg-gray-900 hover:bg-gray-700 text-gray-300 px-4 py-3 rounded-lg transition-colors text-sm">
+                            List users created today
+                        </button>
+                        <button class="example-btn w-full text-left bg-gray-900 hover:bg-gray-700 text-gray-300 px-4 py-3 rounded-lg transition-colors text-sm">
+                            What are all the user names?
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Features -->
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-purple-400 mb-4 flex items-center gap-2">
+                        <i class="fas fa-shield-alt"></i>Safety Features
+                    </h3>
+                    <ul class="space-y-3 text-sm text-gray-300">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span><strong>Read-Only:</strong> Only SELECT queries allowed</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span><strong>Auto Safety Check:</strong> Blocks destructive operations</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span><strong>Query Refinement:</strong> Up to 3 automatic retries</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-500 mt-1"></i>
+                            <span><strong>Row Limits:</strong> Prevents overwhelming results</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Stats -->
+                <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-6">
+                    <h3 class="text-lg font-bold text-green-400 mb-4 flex items-center gap-2">
+                        <i class="fas fa-chart-line"></i>Session Stats
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div class="bg-gray-900 rounded-lg p-3">
+                            <div class="text-3xl font-bold text-blue-400" id="totalQueries">0</div>
+                            <div class="text-xs text-gray-400">Queries</div>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-3">
+                            <div class="text-3xl font-bold text-green-400" id="successRate">100%</div>
+                            <div class="text-xs text-gray-400">Success</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
